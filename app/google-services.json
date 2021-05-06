@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "17148422095",
+    "project_id": "videorecord-aa3e8",
+    "storage_bucket": "videorecord-aa3e8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17148422095:android:522bbd92becd5e686394ba",
+        "android_client_info": {
+          "package_name": "com.example.videocamerax"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "17148422095-66htgt9n9gnkr1ce6mlunhbsdrj5cq1p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.videocamerax",
+            "certificate_hash": "53dac16342c9e54e5e7fd1dc5e56a386797dfc8b"
+          }
+        },
+        {
+          "client_id": "17148422095-1smer44qqhjud1dd0t40p8sd25nicqqh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzHUQ80O-Uo7XBZnstDRfY6gG8_XZqpps"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "17148422095-1smer44qqhjud1dd0t40p8sd25nicqqh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

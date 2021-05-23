@@ -2,18 +2,24 @@ package com.example.videocamerax
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
+import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Environment
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.VideoCapture
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.tasks.Continuation
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.Task
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.google.firebase.storage.UploadTask
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
@@ -23,16 +29,17 @@ class MainActivity : AppCompatActivity() {
     var CAMERA_PERMISSION = Manifest.permission.CAMERA
     var RECORD_AUDIO_PERMISSION = Manifest.permission.RECORD_AUDIO
     var RC_PERMISSION = 101
-
+    lateinit var timer:CountDownTimer
+    lateinit var storage:StorageReference
+    lateinit var file: File
+    lateinit var uri: Uri
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         val recordFiles = ContextCompat.getExternalFilesDirs(this, Environment.DIRECTORY_MOVIES)
         val storageDirectory = recordFiles[0]
         val videoRecordingFilePath = "${storageDirectory.absoluteFile}/${System.currentTimeMillis()}_video.mp4"
-
         if (checkPermissions()) startCameraSession() else requestPermissions()
 
         video_record.setOnClickListener {
@@ -41,19 +48,41 @@ class MainActivity : AppCompatActivity() {
                 video_record.text = "Record Video"
                 Toast.makeText(this, "Recording Stopped", Toast.LENGTH_SHORT).show()
                 camera_view.stopRecording()
+                timer.cancel()
+                textView15.setText("60")
             } else {
                 isRecording = true
                 video_record.text = "Stop Recording"
                 Toast.makeText(this, "Recording Started", Toast.LENGTH_SHORT).show()
                 recordVideo(videoRecordingFilePath)
+                timer = object: CountDownTimer(60000, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        textView15.setText((millisUntilFinished / 1000).toString());
+                    }
+                    override fun onFinish() {
+                        isRecording = false
+                        video_record.text = "Record Video"
+                        Toast.makeText(this@MainActivity, "Time is up. Recording Stopped", Toast.LENGTH_SHORT).show()
+                        camera_view.stopRecording()
+                    }
+                }
+                timer.start()
             }
         }
 
-        submit.setOnClickListener{
+        button.setOnClickListener{
             Toast.makeText(this, "Uploading to Firebase", Toast.LENGTH_SHORT).show()
-            //code for firebase upload
-        }
-    }
+            storage=FirebaseStorage.getInstance().reference
+            val mReference = storage.child("Interview.mp4")
+            mReference.putFile(uri).addOnSuccessListener {
+                taskSnapshot -> val url=taskSnapshot.storage.downloadUrl.toString()
+                Toast.makeText(this@MainActivity,url, Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener{
+                exception->
+                Toast.makeText(this@MainActivity,exception.toString(), Toast.LENGTH_SHORT).show()
+                Log.d("upload",exception.toString())
+            }
+    }}
 
     private fun requestPermissions() {
         ActivityCompat.requestPermissions(this, arrayOf(CAMERA_PERMISSION, RECORD_AUDIO_PERMISSION), RC_PERMISSION)
@@ -100,6 +129,8 @@ class MainActivity : AppCompatActivity() {
             override fun onVideoSaved(file: File) {
                 Toast.makeText(this@MainActivity, "Recording Saved", Toast.LENGTH_SHORT).show()
                 Log.d(TAG, "onVideoSaved $videoRecordingFilePath")
+                this@MainActivity.file = file
+                uri = Uri.fromFile(file)
             }
 
             override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
@@ -109,3 +140,5 @@ class MainActivity : AppCompatActivity() {
         })
     }
 }
+
+
